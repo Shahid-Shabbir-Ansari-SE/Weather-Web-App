@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import Navbar from "../components/navbar";
 
 function home() {
   const [weatherData, setWeatherData] = useState<any>();
   const [timeData, setTimeData] = useState<any>();
   const apiKey = "fbc818a1745e792def8db478c9f64f5e";
-  const city = "Faisalabad"; // Replace with the actual city name
   const [hourlyForecast, setHourlyForecast] = useState<any>();
+  const [dailyForecast, setDailyForecast] = useState<any>();
+  const [city, setCityName] = useState<any>("London");
   const customWeatherIcons: { [key: string]: string } = {
     "01d": "sunny-day.png",
     "01n": "sunny-day.png",
@@ -34,6 +36,7 @@ function home() {
   useEffect(() => {
     fetchWeatherData(city);
     fetchTimeData(city);
+    fetchDailyweather();
   }, [city]);
 
   const fetchWeatherData = async (city: string) => {
@@ -74,7 +77,6 @@ function home() {
       );
       const data = await response.json();
       setHourlyForecast(data);
-      console.log(data);
     } catch (error) {
       console.error("Error fetching hourly forecast:", error);
     }
@@ -101,7 +103,7 @@ function home() {
 
   // Calculate specific time for 4 hours from now
   const specificTime = new Date();
-  specificTime.setHours(specificTime.getHours() + 7);
+  specificTime.setHours(specificTime.getHours() + 4);
 
   const filterHourlyForecast = (hourlyData: any) => {
     if (!hourlyData || !hourlyData.list) {
@@ -118,52 +120,166 @@ function home() {
   };
 
   const filteredHourlyForecast = filterHourlyForecast(hourlyForecast);
+  const fetchDailyweather = async () => {
+    try {
+      const response = await fetch(
+        ` https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&include=days&key=RZV8K2FBF58GCZZCEHD68D2PY&contentType=json`
+      );
+      const data = await response.json();
+      setDailyForecast(data);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+  function getImageForCondition(condition: string) {
+    // Define a mapping of conditions to image sources
+    const conditionToImage: { [key: string]: string } = {
+      Clear: "sunny-day.png",
+      "Partially cloudy": "fewclouds.png",
+      Rain: "light-rain.webp",
+      Overcast: "overcast.png",
+      Drizzle: "drizzle.png",
+      "Rain, Partially cloudy": "drizzle.png",
+      "Rain, Overcast": "light-rain.webp",
+      "Snow, Rain, Overcast": "snow.webp",
+
+      // Add more conditions and corresponding image sources as needed
+    };
+
+    // Check if the condition exists in the mapping
+    if (condition in conditionToImage) {
+      const imageUrl = conditionToImage[condition];
+      return <img className="w-16" src={imageUrl} alt={condition} />;
+    } else {
+      return null; // Return null if no image is found for the condition
+    }
+  }
+
+  const getCityNamebyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCityName(e.target.value);
+  };
 
   return (
     <div>
-      <div>
-        {weatherData && weatherData.weather && (
-          <div>
-            {weatherData.weather[0].icon && (
-              <img
-                className="w-40 fill-slate-100"
-                src={getWeatherIconUrl(weatherData.weather[0].icon)}
-                alt="Weather Icon"
-              />
-            )}
-            <p>{weatherData.weather[0].description}</p>
-            <p>{currentTempinCelsius}℃</p>
-            <p>{maxTempinCelsius}℃</p>
-            <p>{minTempinCelsius}℃</p>
-            <p>{humidity}%</p>
-            <p>{windSpeedKMH}km/h</p>
-          </div>
-        )}
-      </div>
-      <div>
-        {timeData && (
-          <div className="flex">
-            <p>{timeData.hour}</p>
-            <p>:{timeData.minute}</p>
-            <p>:{timeData.day_of_week}</p>
-          </div>
-        )}
-      </div>
-      <div>
-        {filteredHourlyForecast.length > 0 && (
-          <div>
-            {filteredHourlyForecast.map((hourlyData: any, index: number) => (
-              <div key={index}>
-                <p>{hourlyData.dt_txt}</p>
-                <p>Rain: {hourlyData.pop * 100}%</p>
-                <p>{hourlyData.weather[0].main}</p>
-                <img
-                  src={getHourlyForecastIconUrl(hourlyData.weather[0].icon)}
-                  alt="Hourly Forecast Icon"
-                />
-                <p>{Math.round(hourlyData.main.temp - 273.15)}℃</p>
+      <Navbar getCityNamebyInput={getCityNamebyInput} />
+      <div className="flex items-center py-5">
+        <div className="w-1/2 flex justify-end">
+          {weatherData && weatherData.weather && (
+            <div className="flex items-center gap-10">
+              <div className="grid text-center w-full">
+                {weatherData.weather[0].icon && (
+                  <img
+                    className="w-96 fill-slate-100"
+                    src={getWeatherIconUrl(weatherData.weather[0].icon)}
+                    alt="Weather Icon"
+                  />
+                )}
+                <span className="capitalize text-3xl font-bold">
+                  {weatherData.weather[0].description}
+                </span>
               </div>
-            ))}
+              <div className="grid w-full">
+                <span className="text-5xl font-extrabold">
+                  {currentTempinCelsius}°C
+                </span>
+                <div className="flex font-semibold">
+                  <span>Max-Temp:</span>
+                  <span className="ml-2 font-normal">{maxTempinCelsius}℃</span>
+                </div>
+                <div className="flex font-semibold">
+                  <span>Min-Temp:</span>{" "}
+                  <span className="ml-2 font-normal">{minTempinCelsius}℃</span>
+                </div>
+                <div>
+                  <span className="flex">
+                    <span className="mr-2 font-semibold">Humidity:</span>
+                    {humidity}%
+                  </span>
+                </div>
+                <div>
+                  <span className="flex">
+                    <span className="mr-2 font-semibold">Wind Speed:</span>
+                    {windSpeedKMH}km/h
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="w-1/2 flex justify-start items-center">
+          <div>
+            {timeData && (
+              <div className="grid text-center text-3xl px-10">
+                <span>{timeData.day_of_week}</span>
+                <span className="font-bold">
+                  {timeData.hour > 12
+                    ? timeData.hour - 12 + ":" + timeData.minute + "pm"
+                    : timeData.hour + ":" + timeData.minute + "am"}
+                </span>
+              </div>
+            )}
+          </div>
+          <div>
+            {filteredHourlyForecast.length > 0 && (
+              <div>
+                {filteredHourlyForecast.map(
+                  (hourlyData: any, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center border-2 my-3 rounded-lg pr-5 p-2"
+                    >
+                      <img
+                        src={getHourlyForecastIconUrl(
+                          hourlyData.weather[0].icon
+                        )}
+                        alt="Hourly Forecast Icon"
+                      />
+                      <div className="flex gap-10">
+                        <div className="grid font-semibold">
+                          <span>
+                            {Math.round(hourlyData.main.temp - 273.15)}℃
+                          </span>
+                          <span>{hourlyData.weather[0].main}</span>
+                        </div>
+                        <div className="grid text-right">
+                          <span>{hourlyData.dt_txt}</span>
+                          <span>Rain: {hourlyData.pop * 100}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div>
+        {dailyForecast && (
+          <div className="grid grid-cols-5 gap-10 px-10">
+            {dailyForecast.days.map((dailyData: any, index: number) =>
+              index < 5 ? (
+                <div
+                  key={index}
+                  className="grid items-center border-2 rounded-lg px-4 py-2"
+                >
+                  <p className="text-right">{dailyData.datetime}</p>
+                  <div className="flex">
+                    <div className="">
+                      <div className="flex items-center gap-5">
+                        {getImageForCondition(dailyData.conditions)}
+                        <span className="font-semibold text-3xl">
+                          {Math.round(dailyData.temp)}°C
+                        </span>
+                      </div>
+                      <div className="grid">
+                        <span className="">{dailyData.conditions}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null
+            )}
           </div>
         )}
       </div>

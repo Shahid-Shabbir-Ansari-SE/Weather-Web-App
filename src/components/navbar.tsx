@@ -1,4 +1,8 @@
-const navbar = () => {
+type navbarProps = {
+  getCityNamebyInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+const navbar: React.FC<navbarProps> = ({ getCityNamebyInput }) => {
   return (
     <div>
       <header className="bg-white">
@@ -7,13 +11,12 @@ const navbar = () => {
           aria-label="Global"
         >
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
+            <a href="/" className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
-              <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                alt=""
-              />
+              <div className="flex items-center gap-5 text-2xl font-semibold">
+                  <img className="h-12 w-auto" src="logo.png" alt="" />
+                Sky360
+              </div>
             </a>
           </div>
           <div className="flex lg:hidden">
@@ -26,13 +29,13 @@ const navbar = () => {
                 className="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 aria-hidden="true"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
                 />
               </svg>
@@ -41,25 +44,26 @@ const navbar = () => {
           <div className="hidden lg:flex lg:gap-x-12 items-center">
             <a
               href="#"
-              className="text-sm font-semibold leading-6 text-gray-900"
+              className="text-sm font-semibold leading-6 text-black border-b-2 border-black"
             >
-              Features
+              Resume
             </a>
-            <input type="text" placeholder="Enter City Name" className="border-gray-600 border rounded-lg p-1 text-center"/>
+            <input
+              type="text"
+              placeholder="Enter City Name"
+              className="border-gray-600 border rounded-lg p-1 text-center"
+            />
             <a
               href="#"
-              className="text-sm font-semibold leading-6 text-gray-900"
+              className="text-sm font-semibold leading-6 text-black border-b-2 border-black"
             >
-              Company
+              About Me
             </a>
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a
-              href="#"
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
-              Log in <span aria-hidden="true">&rarr;</span>
-            </a>
+            <button className="bg-orange-500 font-semibold text-white shadow-lg px-5 py-2 rounded-lg">
+              Hire Me
+            </button>
           </div>
         </nav>
         <div className="lg:hidden" role="dialog" aria-modal="true">
@@ -68,11 +72,7 @@ const navbar = () => {
             <div className="flex items-center justify-between">
               <a href="#" className="-m-1.5 p-1.5">
                 <span className="sr-only">Your Company</span>
-                <img
-                  className="h-8 w-auto"
-                  src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                  alt=""
-                />
+                <img className="h-8 w-auto" src="logo.png" alt="" />
               </a>
               <button
                 type="button"
@@ -83,13 +83,13 @@ const navbar = () => {
                   className="h-6 w-6"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                   aria-hidden="true"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
@@ -112,9 +112,9 @@ const navbar = () => {
                         aria-hidden="true"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         />
                       </svg>
                     </button>
