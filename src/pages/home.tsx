@@ -235,7 +235,7 @@ function home() {
   };
 
   return (
-    <div>
+    <div className="font-primary">
       <Navbar
         getCityNamebyInput={getCityNamebyInput}
         settingCityName={setingCityName}

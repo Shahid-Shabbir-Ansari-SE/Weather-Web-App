@@ -20,7 +20,7 @@ const navbar: React.FC<navbarProps> = ({
   };
   return (
     <div>
-      <header className="bg-white">
+      <header className="bg-white dark:bg-black dark:text-white">
         <nav
           className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
           aria-label="Global"
@@ -60,16 +60,16 @@ const navbar: React.FC<navbarProps> = ({
           <div className="hidden lg:flex lg:gap-x-12 items-center">
             <a
               href="#"
-              className="text-sm font-semibold leading-6 text-black border-b-2 border-black"
+              className="text-sm font-semibold leading-6 text-black border-b-2 border-black dark:text-white dark:border-white"
             >
               Resume
             </a>
-            <div className="flex border-2 rounded-xl p-0 border-gray-600">
+            <div className="flex border-2 rounded-xl p-0 border-gray-600 dar">
               <input
                 type="text"
                 onChange={getCityNamebyInput}
                 placeholder="Enter City Name"
-                className=" text-center rounded-xl border-0 outline-none active:border-0"
+                className=" text-center rounded-l-xl border-0 outline-none active:border-0 dark:text-black"
               />
               <img
                 src="search.svg"
@@ -80,7 +80,7 @@ const navbar: React.FC<navbarProps> = ({
             </div>
             <a
               href="#"
-              className="text-sm font-semibold leading-6 text-black border-b-2 border-black"
+              className="text-sm font-semibold leading-6 text-black border-b-2 border-black dark:text-white dark:border-white"
             >
               About Me
             </a>
@@ -94,7 +94,7 @@ const navbar: React.FC<navbarProps> = ({
         <div className="" role="dialog" aria-modal="true">
           <div
             style={sidebarstyle}
-            className="transition-transform  translate-x-full fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10"
+            className="transition-transform  translate-x-full fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-black dark:text-white"
           >
             <div className="flex items-center justify-between">
               <a href="#" className="-m-1.5 p-1.5 flex items-center">
@@ -131,7 +131,7 @@ const navbar: React.FC<navbarProps> = ({
                       type="text"
                       onChange={getCityNamebyInput}
                       placeholder="Enter City Name"
-                      className=" text-center rounded-xl border-0 outline-none active:border-0 w-[186px]"
+                      className=" text-center dark:text-black rounded-l-xl border-0 outline-none active:border-0 w-[186px]"
                     />
                     <img
                       src="search.svg"
@@ -142,19 +142,19 @@ const navbar: React.FC<navbarProps> = ({
                   </div>
                   <a
                     href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white"
                   >
                     Portfolio
                   </a>
                   <a
                     href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white"
                   >
                     About Me
                   </a>
                   <a
                     href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white"
                   >
                     Resume
                   </a>
