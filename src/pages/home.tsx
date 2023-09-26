@@ -3,11 +3,12 @@ import Navbar from "../components/navbar";
 
 function home() {
   const [weatherData, setWeatherData] = useState<any>();
-  const [timeData, setTimeData] = useState<any>();
+  const [timeData, setTimeData] = useState<any>("undefined");
   const apiKey = "fbc818a1745e792def8db478c9f64f5e";
   const [hourlyForecast, setHourlyForecast] = useState<any>();
   const [dailyForecast, setDailyForecast] = useState<any>();
-  const [city, setCityName] = useState<any>("London");
+  const [city, setCityName] = useState<any>("New York");
+  var storeCityName: any = "";
   const customWeatherIcons: { [key: string]: string } = {
     "01d": "sunny-day.png",
     "01n": "sunny-day.png",
@@ -33,13 +34,7 @@ function home() {
     }
   };
 
-  useEffect(() => {
-    fetchWeatherData(city);
-    fetchTimeData(city);
-    fetchDailyweather();
-  }, [city]);
-
-  const fetchWeatherData = async (city: string) => {
+  const fetchWeatherDataByCity = async (city: string) => {
     try {
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`
@@ -47,12 +42,76 @@ function home() {
       const data = await response.json();
       setWeatherData(data);
       fetchHourlyForecast(data.coord.lat, data.coord.lon);
+      fetchTimeData2(city);
+      // Fetch other data based on weatherData...
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
   };
 
-  const fetchTimeData = async (city: string) => {
+  // Function to fetch weather data by user's location
+  const fetchWeatherDataByLocation = async (position: GeolocationPosition) => {
+    const { latitude, longitude } = position.coords;
+    try {
+      // Use the user's latitude and longitude to fetch weather data
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
+      );
+      const data = await response.json();
+      setWeatherData(data);
+      fetchHourlyForecast(data.coord.lat, data.coord.lon);
+      fetchTimeData(data.coord.lat, data.coord.lon);
+      fetchDailyweather2(data.coord.lat, data.coord.lon);
+      // Fetch other data based on weatherData...
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Check if geolocation is available in the user's browser
+    if ("geolocation" in navigator) {
+      // If geolocation is available, attempt to get the user's location
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // User granted access to their location
+          fetchWeatherDataByLocation(position);
+        },
+        (error) => {
+          // User denied access to their location or an error occurred
+          console.error("Error getting user location:", error);
+          // If there's an error or user denied location access, fall back to fetching weather by city name
+          fetchWeatherDataByCity(city); // You can provide a default city or handle this differently
+          fetchDailyweather(city);
+        }
+      );
+    } else {
+      // Geolocation is not available in the user's browser
+      console.error("Geolocation is not available in this browser.");
+      // Fall back to fetching weather by city name
+      fetchWeatherDataByCity(city); // You can provide a default city or handle this differently
+
+    }
+  }, [apiKey]);
+
+  const fetchTimeData = async (latitude: number, longitude: number) => {
+    try {
+      const response = await fetch(
+        `https://api.api-ninjas.com/v1/worldtime?lat=${latitude}&lon=${longitude}`,
+        {
+          method: "GET",
+          headers: {
+            "X-Api-Key": "lAshpZjJxVdIS9brjMEOPQ==0PaE9qkzKi2BYNgX",
+          },
+        }
+      );
+      const data = await response.json();
+      setTimeData(data);
+    } catch (error) {
+      console.error("Error fetching time data:", error);
+    }
+  };
+  const fetchTimeData2 = async (city: string) => {
     try {
       const response = await fetch(
         `https://api.api-ninjas.com/v1/worldtime?city=${city}`,
@@ -103,7 +162,7 @@ function home() {
 
   // Calculate specific time for 4 hours from now
   const specificTime = new Date();
-  specificTime.setHours(specificTime.getHours() + 4);
+  specificTime.setHours(specificTime.getHours());
 
   const filterHourlyForecast = (hourlyData: any) => {
     if (!hourlyData || !hourlyData.list) {
@@ -120,10 +179,21 @@ function home() {
   };
 
   const filteredHourlyForecast = filterHourlyForecast(hourlyForecast);
-  const fetchDailyweather = async () => {
+  const fetchDailyweather = async (city:string) => {
     try {
       const response = await fetch(
-        ` https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&include=days&key=RZV8K2FBF58GCZZCEHD68D2PY&contentType=json`
+        ` https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&include=days&key=FY56X8C2XTN7J9RFWSX2BW487&contentType=json`
+      );
+      const data = await response.json();
+      setDailyForecast(data);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+  const fetchDailyweather2 = async (latitude: number, longitude: number) => {
+    try {
+      const response = await fetch(
+        ` https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${latitude},${longitude}?unitGroup=metric&include=days&key=FY56X8C2XTN7J9RFWSX2BW487&contentType=json`
       );
       const data = await response.json();
       setDailyForecast(data);
@@ -154,22 +224,30 @@ function home() {
       return null; // Return null if no image is found for the condition
     }
   }
-
   const getCityNamebyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCityName(e.target.value);
+    storeCityName = e.target.value;
+  };
+
+  const setingCityName = () => {
+    setCityName(storeCityName);
+    fetchWeatherDataByCity(storeCityName);
+    fetchDailyweather(storeCityName);
   };
 
   return (
     <div>
-      <Navbar getCityNamebyInput={getCityNamebyInput} />
-      <div className="flex items-center py-5">
-        <div className="w-1/2 flex justify-end">
+      <Navbar
+        getCityNamebyInput={getCityNamebyInput}
+        settingCityName={setingCityName}
+      />
+      <div className="lg:flex grid items-center py-5 lg:p-2">
+        <div className="lg:w-1/2 w-[100vw] justify-center flex lg:justify-end">
           {weatherData && weatherData.weather && (
-            <div className="flex items-center gap-10">
+            <div className="md:flex justify-center grid w-full lg:w-auto md:w-auto items-center gap-10">
               <div className="grid text-center w-full">
                 {weatherData.weather[0].icon && (
                   <img
-                    className="w-96 fill-slate-100"
+                    className="lg:w-96 md:w-96 w-52 fill-slate-100"
                     src={getWeatherIconUrl(weatherData.weather[0].icon)}
                     alt="Weather Icon"
                   />
@@ -178,20 +256,20 @@ function home() {
                   {weatherData.weather[0].description}
                 </span>
               </div>
-              <div className="grid w-full">
-                <span className="text-5xl font-extrabold">
+              <div className="grid w-full justify-center text-center lg:justify-start md:justify-center">
+                <span className="lg:text-5xl text-3xl font-extrabold">
                   {currentTempinCelsius}°C
                 </span>
-                <div className="flex font-semibold">
+                <div className="lg:flex font-semibold justify-center">
                   <span>Max-Temp:</span>
-                  <span className="ml-2 font-normal">{maxTempinCelsius}℃</span>
+                  <span className="ml-2 font-normal">{maxTempinCelsius}°C</span>
                 </div>
-                <div className="flex font-semibold">
+                <div className="flex font-semibold justify-center">
                   <span>Min-Temp:</span>{" "}
-                  <span className="ml-2 font-normal">{minTempinCelsius}℃</span>
+                  <span className="ml-2 font-normal">{minTempinCelsius}°C</span>
                 </div>
                 <div>
-                  <span className="flex">
+                  <span className="flex justify-center">
                     <span className="mr-2 font-semibold">Humidity:</span>
                     {humidity}%
                   </span>
@@ -206,44 +284,57 @@ function home() {
             </div>
           )}
         </div>
-        <div className="w-1/2 flex justify-start items-center">
+        <div className="lg:w-1/2 lg:flex lg:justify-start justify-center items-center">
           <div>
-            {timeData && (
-              <div className="grid text-center text-3xl px-10">
+            {timeData ? (
+              <div className="grid text-center text-3xl px-10 py-10">
                 <span>{timeData.day_of_week}</span>
                 <span className="font-bold">
-                  {timeData.hour > 12
-                    ? timeData.hour - 12 + ":" + timeData.minute + "pm"
-                    : timeData.hour + ":" + timeData.minute + "am"}
+                  {timeData.hour === undefined ? (
+                    <p>Invalid City Name</p>
+                  ) : timeData.hour > 12 ? (
+                    timeData.hour - 12 + ":" + timeData.minute + "pm"
+                  ) : (
+                    timeData.hour + ":" + timeData.minute + "am"
+                  )}
                 </span>
+              </div>
+            ) : (
+              <div className="grid text-center text-3xl px-10">
+                <span>Invalid Time Data</span>
               </div>
             )}
           </div>
           <div>
+            <h1 className="lg:hidden text-xl font-bold text-center underline">
+              Hourly Forecast
+            </h1>
             {filteredHourlyForecast.length > 0 && (
-              <div>
+              <div className="lg:grid grid justify-center py-7 lg:p-0 md:flex">
                 {filteredHourlyForecast.map(
                   (hourlyData: any, index: number) => (
                     <div
                       key={index}
-                      className="flex items-center border-2 my-3 rounded-lg pr-5 p-2"
+                      className="lg:flex w-full items-center border-2 my-3 rounded-lg lg:pr-5 p-2 text-center mx-auto"
                     >
-                      <img
-                        src={getHourlyForecastIconUrl(
-                          hourlyData.weather[0].icon
-                        )}
-                        alt="Hourly Forecast Icon"
-                      />
-                      <div className="flex gap-10">
+                      <div className="w-full lg:w-auto flex lg:grid justify-center">
+                        <img
+                          src={getHourlyForecastIconUrl(
+                            hourlyData.weather[0].icon
+                          )}
+                          alt="Hourly Forecast Icon"
+                        />
+                      </div>
+                      <div className="grid lg:flex gap-10 lg:gap-0 items-center">
                         <div className="grid font-semibold">
                           <span>
-                            {Math.round(hourlyData.main.temp - 273.15)}℃
+                            {Math.round(hourlyData.main.temp - 273.15)}°C
                           </span>
                           <span>{hourlyData.weather[0].main}</span>
                         </div>
-                        <div className="grid text-right">
+                        <div className="grid lg:text-right">
                           <span>{hourlyData.dt_txt}</span>
-                          <span>Rain: {hourlyData.pop * 100}%</span>
+                          <span>Rain: {Math.round(hourlyData.pop * 100)}%</span>
                         </div>
                       </div>
                     </div>
@@ -255,8 +346,11 @@ function home() {
         </div>
       </div>
       <div>
+        <h1 className="lg:hidden text-xl font-bold text-center underline">
+          Daily Forecast
+        </h1>
         {dailyForecast && (
-          <div className="grid grid-cols-5 gap-10 px-10">
+          <div className="grid lg:grid-cols-5 md:justify-center md:flex flex-wrap gap-10 px-10 py-7 lg:py-0">
             {dailyForecast.days.map((dailyData: any, index: number) =>
               index < 5 ? (
                 <div
@@ -272,7 +366,7 @@ function home() {
                           {Math.round(dailyData.temp)}°C
                         </span>
                       </div>
-                      <div className="grid">
+                      <div className="grid text-center">
                         <span className="">{dailyData.conditions}</span>
                       </div>
                     </div>
