@@ -23,13 +23,44 @@ function home() {
     "02n": "fewclouds.png",
     "02d": "fewclouds.png",
   };
+  const currentTempinKelvin = weatherData?.main?.temp;
+  const currentTempinCelsius = Math.round(currentTempinKelvin - 273.15);
 
+  const maxTempinKelvin = weatherData?.main?.temp_max;
+  const maxTempinCelsius = Math.round(maxTempinKelvin - 273.15);
+
+  const minTempinKelvin = weatherData?.main?.temp_min;
+  const minTempinCelsius = Math.round(minTempinKelvin - 273.15);
+
+  const humidity = weatherData?.main?.humidity;
+  const windSpeedMS = weatherData?.wind?.speed;
+  const windSpeedKMH = Math.floor(windSpeedMS * 3.6);
+
+  const specificTime = new Date();
+  specificTime.setHours(specificTime.getHours());
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeatherDataByLocation(position);
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+          fetchWeatherDataByCity(city);
+          fetchDailyweather(city);
+        }
+      );
+    } else {
+      console.error("Geolocation is not available in this browser.");
+      fetchWeatherDataByCity(city);
+    }
+  }, [apiKey]);
+  
   const getWeatherIconUrl = (iconCode: string) => {
-    // Check if there's a custom image URL for the given weather condition code
     if (customWeatherIcons.hasOwnProperty(iconCode)) {
       return customWeatherIcons[iconCode];
     } else {
-      // If no custom image is available, use the default OpenWeatherMap image
       return `https://openweathermap.org/img/wn/${iconCode}.png`;
     }
   };
@@ -43,17 +74,14 @@ function home() {
       setWeatherData(data);
       fetchHourlyForecast(data.coord.lat, data.coord.lon);
       fetchTimeData2(city);
-      // Fetch other data based on weatherData...
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
   };
 
-  // Function to fetch weather data by user's location
   const fetchWeatherDataByLocation = async (position: GeolocationPosition) => {
     const { latitude, longitude } = position.coords;
     try {
-      // Use the user's latitude and longitude to fetch weather data
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
       );
@@ -62,37 +90,10 @@ function home() {
       fetchHourlyForecast(data.coord.lat, data.coord.lon);
       fetchTimeData(data.coord.lat, data.coord.lon);
       fetchDailyweather2(data.coord.lat, data.coord.lon);
-      // Fetch other data based on weatherData...
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
   };
-
-  useEffect(() => {
-    // Check if geolocation is available in the user's browser
-    if ("geolocation" in navigator) {
-      // If geolocation is available, attempt to get the user's location
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // User granted access to their location
-          fetchWeatherDataByLocation(position);
-        },
-        (error) => {
-          // User denied access to their location or an error occurred
-          console.error("Error getting user location:", error);
-          // If there's an error or user denied location access, fall back to fetching weather by city name
-          fetchWeatherDataByCity(city); // You can provide a default city or handle this differently
-          fetchDailyweather(city);
-        }
-      );
-    } else {
-      // Geolocation is not available in the user's browser
-      console.error("Geolocation is not available in this browser.");
-      // Fall back to fetching weather by city name
-      fetchWeatherDataByCity(city); // You can provide a default city or handle this differently
-
-    }
-  }, [apiKey]);
 
   const fetchTimeData = async (latitude: number, longitude: number) => {
     try {
@@ -141,28 +142,9 @@ function home() {
     }
   };
 
-  // Function to get the URL for the weather icon
-
   const getHourlyForecastIconUrl = (iconCode: string) => {
     return `https://openweathermap.org/img/wn/${iconCode}.png`;
   };
-
-  const currentTempinKelvin = weatherData?.main?.temp;
-  const currentTempinCelsius = Math.round(currentTempinKelvin - 273.15);
-
-  const maxTempinKelvin = weatherData?.main?.temp_max;
-  const maxTempinCelsius = Math.round(maxTempinKelvin - 273.15);
-
-  const minTempinKelvin = weatherData?.main?.temp_min;
-  const minTempinCelsius = Math.round(minTempinKelvin - 273.15);
-
-  const humidity = weatherData?.main?.humidity;
-  const windSpeedMS = weatherData?.wind?.speed;
-  const windSpeedKMH = Math.floor(windSpeedMS * 3.6);
-
-  // Calculate specific time for 4 hours from now
-  const specificTime = new Date();
-  specificTime.setHours(specificTime.getHours());
 
   const filterHourlyForecast = (hourlyData: any) => {
     if (!hourlyData || !hourlyData.list) {
@@ -174,7 +156,7 @@ function home() {
       return (
         hourlyTime >= specificTime &&
         hourlyTime < new Date(specificTime.getTime() + 12 * 60 * 60 * 1000)
-      ); // 4 hours in milliseconds
+      );
     });
   };
 
@@ -202,26 +184,23 @@ function home() {
     }
   };
   function getImageForCondition(condition: string) {
-    // Define a mapping of conditions to image sources
     const conditionToImage: { [key: string]: string } = {
-      Clear: "sunny-day.png",
+      "Clear": "sunny-day.png",
       "Partially cloudy": "fewclouds.png",
-      Rain: "light-rain.webp",
-      Overcast: "overcast.png",
-      Drizzle: "drizzle.png",
+      "Rain": "light-rain.webp",
+      "Overcast": "overcast.png",
+      "Drizzle": "drizzle.png",
       "Rain, Partially cloudy": "drizzle.png",
       "Rain, Overcast": "light-rain.webp",
       "Snow, Rain, Overcast": "snow.webp",
-
-      // Add more conditions and corresponding image sources as needed
+      "Snow": "snow.webp",
     };
 
-    // Check if the condition exists in the mapping
     if (condition in conditionToImage) {
       const imageUrl = conditionToImage[condition];
       return <img className="w-16" src={imageUrl} alt={condition} />;
     } else {
-      return null; // Return null if no image is found for the condition
+      return null;
     }
   }
   const getCityNamebyInput = (e: React.ChangeEvent<HTMLInputElement>) => {
